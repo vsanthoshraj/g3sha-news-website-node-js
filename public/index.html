@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>G3sha News</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <nav>
+    <div class="main-nav">
+      <div class="left-section">
+        <a href="" class="company-logo">
+        </a>
+        <h1 class="site-title">G3sha News</h1>
+      </div>
+      <div class="nav-links">
+        <ul>
+          <li class="hover-link nav-item" id="general" onclick="onNavItemClick('general')">General</li>
+          <li class="hover-link nav-item" id="business" onclick="onNavItemClick('business')">Business</li>
+          <li class="hover-link nav-item" id="technology" onclick="onNavItemClick('technology')">Technology</li>
+          <li class="hover-link nav-item" id="politics" onclick="onNavItemClick('politics')">Politics</li>
+          <li class="hover-link nav-item" id="entertainment" onclick="onNavItemClick('entertainment')">Entertainment</li>
+          <li class="hover-link nav-item" id="chennai" onclick="onNavItemClick('chennai')">Chennai</li>
+        </ul>
+      </div>
+      <div class="search-bar">
+        <input type="text" class="news-input" id="search-text" placeholder="e.g. Science" />
+        <button class="search-button" id="search-button">Search</button>
+      </div>
+    </div>
+  </nav>
+  <main>
+    <div class="cards-container container flex" id="cardscontainer"></div>
+  </main>
+
+  <template id="template-news-card">
+    <div class="card">
+      <div class="card-header">
+        <img src="" alt="news image" class="news-img" onerror="this.src='./images/fallback-image.jpg'" />
+      </div>
+      <div class="card-content">
+        <h3 class="news-title">Insightstream</h3>
+        <h6 class="news-source">InsightStream</h6>
+        <p class="news-desc">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+      </div>
+    </div>
+  </template>
+  <footer>
+    <div class="footer-main">
+      <div class="footer-container">
+        <!-- Footer content unchanged -->
+      </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 G3sha News. open source.</p>
+    </div>
+  </footer>
+</body>
+</html>

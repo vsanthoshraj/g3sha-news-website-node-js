@@ -1,0 +1,14 @@
+{
+  "name": "news-website",
+  "version": "1.0.0",
+  "description": "News website with Node.js backend proxy for NewsAPI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7"
+  }
+}
