@@ -1,60 +1,83 @@
 pipeline {
-    agent any
+    agent {
+        node {
+            label 'docker'  // Runs on Docker Builder EC2
+        }
+    }
     
     environment {
         NEWS_API_KEY = credentials('NEWS_API_KEY')
+        SONARQUBE_TOKEN = credentials('sonarqube-token')
+        DOCKER_IMAGE = 'news-website:latest'
     }
     
     stages {
-        stage('Checkout') {
+        stage('1. Checkout') {
             steps {
-                echo 'Cloning repository...'
+                echo 'Stage 1: Cloning repository...'
                 checkout scm
             }
         }
         
-        stage('Install Dependencies') {
+        stage('2. Install Dependencies') {
             steps {
-                echo 'Installing npm dependencies...'
+                echo 'Stage 2: Installing npm dependencies...'
                 sh 'npm install'
             }
         }
         
-        stage('Create .env File') {
+        stage('3. SonarQube Analysis') {
             steps {
-                echo 'Creating .env file with API key...'
-                sh 'echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env'
+                echo 'Stage 3: Running SonarQube analysis...'
+                sh '''
+                    sonar-scanner \
+                      -Dsonar.projectKey=news-website \
+                      -Dsonar.projectName="G3sha News Website" \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
+                      -Dsonar.login=${SONARQUBE_TOKEN} \
+                      -Dsonar.exclusions=node_modules/**,public/**/*.min.js
+                '''
             }
         }
         
-        stage('Build') {
+        stage('4. Docker Builder - Build Image') {
             steps {
-                echo 'Building application...'
-                sh 'echo "Build completed successfully"'
+                echo 'Stage 4: Building Docker image...'
+                sh '''
+                    docker build \
+                      --build-arg NEWS_API_KEY=${NEWS_API_KEY} \
+                      -t ${DOCKER_IMAGE} .
+                '''
             }
         }
         
-        stage('Docker Build') {
+        stage('5. Test Docker Image') {
             steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t news-website:latest .'
+                echo 'Stage 5: Testing Docker image...'
+                sh 'docker run --rm ${DOCKER_IMAGE} node -v'
+                sh 'docker run --rm ${DOCKER_IMAGE} npm -v'
             }
         }
         
-        stage('Test') {
+        stage('6. Docker Image Ready') {
             steps {
-                echo 'Running tests...'
-                sh 'node -v && npm -v'
+                echo 'Stage 6: Docker Image Ready ✓'
+                echo "Image: ${DOCKER_IMAGE}"
+                sh 'docker images | grep news-website'
             }
         }
     }
     
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✓ Pipeline completed successfully!'
+            echo "✓ Docker image ready: ${DOCKER_IMAGE}"
+            echo "✓ Can deploy to production now"
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '✗ Pipeline failed!'
+            echo 'Check console output for errors'
         }
     }
 }
