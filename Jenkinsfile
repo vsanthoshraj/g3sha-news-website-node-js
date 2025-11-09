@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Get API key from Jenkins Credentials
         NEWS_API_KEY = credentials('NEWS_API_KEY')
-        DOCKER_REGISTRY = "EC2_3_IP:5000"
+        DOCKER_REGISTRY = "3.225.185.173:5000"
         DOCKER_IMAGE = "${DOCKER_REGISTRY}/news-website"
         BUILD_TAG = "${BUILD_NUMBER}"
     }
