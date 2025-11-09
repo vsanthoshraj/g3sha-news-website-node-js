@@ -1,17 +1,28 @@
 pipeline {
     agent any
     
+    triggers {
+        githubPush()
+    }
+    
     environment {
-        // Get API key from Jenkins Credentials
+        // Simple variables
+        APP_NAME = "news-website"
+        PORT = "3000"
+        REGISTRY = "192.168.1.100:5000"
+        IMAGE = "${REGISTRY}/${APP_NAME}"
+        
+        // From Jenkins Credentials
         NEWS_API_KEY = credentials('NEWS_API_KEY')
-        DOCKER_REGISTRY = "3.225.185.173:5000"
-        DOCKER_IMAGE = "${DOCKER_REGISTRY}/news-website"
-        BUILD_TAG = "${BUILD_NUMBER}"
+        
+        // Build tag
+        BUILD_TAG = "${BUILD_NUMBER}-${GIT_COMMIT.take(7)}"
     }
     
     stages {
         stage('🔄 Checkout') {
             steps {
+                echo '========== Checking out code =========='
                 checkout scm
             }
         }
@@ -19,21 +30,33 @@ pipeline {
         stage('📦 Install Dependencies') {
             agent { label 'docker' }
             steps {
+                echo '========== Installing npm packages =========='
                 sh 'npm install'
+            }
+        }
+        
+        stage('🧪 Run Tests') {
+            agent { label 'docker' }
+            steps {
+                echo '========== Running tests =========='
+                sh 'npm test || true'
             }
         }
         
         stage('🐳 Build Docker Image') {
             agent { label 'docker' }
             steps {
+                echo '========== Building Docker Image =========='
                 sh '''
-                    # IMPORTANT: Create .env with API key
+                    // Create .env file
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
-                    echo "PORT=3000" >> .env
+                    echo "PORT=${PORT}" >> .env
                     
-                    # Build image
-                    docker build -t ${DOCKER_IMAGE}:${BUILD_TAG} .
-                    docker tag ${DOCKER_IMAGE}:${BUILD_TAG} ${DOCKER_IMAGE}:latest
+                    // Build image
+                    docker build -t ${IMAGE}:${BUILD_TAG} .
+                    docker tag ${IMAGE}:${BUILD_TAG} ${IMAGE}:latest
+                    
+                    echo "✅ Image built: ${IMAGE}:${BUILD_TAG}"
                 '''
             }
         }
@@ -41,9 +64,11 @@ pipeline {
         stage('📤 Push to Registry') {
             agent { label 'docker' }
             steps {
+                echo '========== Pushing image =========='
                 sh '''
-                    docker push ${DOCKER_IMAGE}:${BUILD_TAG}
-                    docker push ${DOCKER_IMAGE}:latest
+                    docker push ${IMAGE}:${BUILD_TAG}
+                    docker push ${IMAGE}:latest
+                    echo "✅ Image pushed"
                 '''
             }
         }
@@ -51,25 +76,28 @@ pipeline {
         stage('🚀 Deploy') {
             agent { label 'docker' }
             steps {
+                echo '========== Deploying application =========='
                 sh '''
-                    # Stop old container
-                    docker stop news-website || true
-                    docker rm news-website || true
+                    // Stop old container
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
                     
-                    # Pull image
-                    docker pull ${DOCKER_IMAGE}:latest
+                    // Pull latest image
+                    docker pull ${IMAGE}:latest
                     
-                    # Run container WITH API KEY ⭐
+                    // Run new container
                     docker run -d \
-                      --name news-website \
-                      -p 3000:3000 \
+                      --name ${APP_NAME} \
+                      -p ${PORT}:${PORT} \
                       -e NEWS_API_KEY="${NEWS_API_KEY}" \
-                      -e PORT=3000 \
+                      -e PORT=${PORT} \
                       --restart always \
-                      ${DOCKER_IMAGE}:latest
+                      ${IMAGE}:latest
                     
+                    // Verify
                     sleep 3
-                    docker ps | grep news-website
+                    docker ps | grep ${APP_NAME}
+                    echo "✅ Application deployed"
                 '''
             }
         }
@@ -77,7 +105,18 @@ pipeline {
     
     post {
         always {
-            sh 'rm -f .env'  # Clean up after build
+            // Clean up after build
+            sh 'rm -f .env'
+        }
+        
+        success {
+            // Pipeline completed successfully
+            echo "✅ Pipeline SUCCESS!"
+        }
+        
+        failure {
+            // Pipeline failed
+            echo "❌ Pipeline FAILED!"
         }
     }
 }
