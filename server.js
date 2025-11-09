@@ -1,26 +1,32 @@
-const express = require("express");
-const fetch = require("node-fetch");
-require("dotenv").config();
+require('dotenv').config();  // Load .env file
+const express = require('express');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.NEWS_API_KEY;
+const API_KEY = process.env.NEWS_API_KEY;  // ⭐ Get API key from environment
 
-app.use(express.static("public"));
+// Check if API key is set
+if (!API_KEY) {
+    console.error('❌ ERROR: NEWS_API_KEY is not set!');
+    process.exit(1);
+}
 
-app.get("/api/news", async (req, res) => {
-  const query = req.query.q || "technology";
-  const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&apiKey=${API_KEY}`;
+console.log('✅ API Key is configured!');
 
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ status: "error", message: err.message });
-  }
+// API endpoint to get news
+app.get('/api/news', async (req, res) => {
+    try {
+        const response = await axios.get(
+            `https://newsapi.org/v2/top-headlines?country=us&apiKey=${API_KEY}`
+        );
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
+
