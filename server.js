@@ -24,7 +24,6 @@ app.get('/api/news', async (req, res) => {
     }
 });
 
-// Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', hasApiKey: !!API_KEY });
 });
@@ -32,6 +31,3 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
-
-echo "// test"
-
