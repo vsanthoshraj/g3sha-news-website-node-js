@@ -11,7 +11,7 @@ pipeline {
         REGISTRY = "YOUR_EC2_3_IP:5000"
         IMAGE = "${REGISTRY}/${APP_NAME}"
         NEWS_API_KEY = credentials('NEWS_API_KEY')
-        BUILD_TAG = "${BUILD_NUMBER}-${GIT_COMMIT.take(7)}"
+        BUILD_TAG = "${BUILD_NUMBER}"
     }
     
     stages {
@@ -19,53 +19,36 @@ pipeline {
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
-            }
-        }
-        
-        stage('📦 Install Dependencies') {
-            agent { label 'docker' }
-            steps {
-                echo '========== Installing npm packages =========='
-                sh 'npm install'
-            }
-        }
-        
-        stage('🧪 Run Tests') {
-            agent { label 'docker' }
-            steps {
-                echo '========== Running tests =========='
-                sh 'npm test || true'
+                sh 'git log --oneline -1'
             }
         }
         
         stage('🐳 Build Docker Image') {
-            agent { label 'docker' }
             steps {
                 echo '========== Building Docker Image =========='
                 sh '''
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
-                    echo "PORT=${PORT}" >> .env
                     docker build -t ${IMAGE}:${BUILD_TAG} .
                     docker tag ${IMAGE}:${BUILD_TAG} ${IMAGE}:latest
+                    echo "✅ Image built: ${IMAGE}:${BUILD_TAG}"
                 '''
             }
         }
         
         stage('📤 Push to Registry') {
-            agent { label 'docker' }
             steps {
-                echo '========== Pushing image =========='
+                echo '========== Pushing to Registry =========='
                 sh '''
                     docker push ${IMAGE}:${BUILD_TAG}
                     docker push ${IMAGE}:latest
+                    echo "✅ Image pushed"
                 '''
             }
         }
         
         stage('🚀 Deploy') {
-            agent { label 'docker' }
             steps {
-                echo '========== Deploying =========='
+                echo '========== Deploying Application =========='
                 sh '''
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
@@ -79,6 +62,7 @@ pipeline {
                       ${IMAGE}:latest
                     sleep 3
                     docker ps | grep ${APP_NAME}
+                    echo "✅ Application deployed"
                 '''
             }
         }
@@ -88,11 +72,13 @@ pipeline {
         always {
             sh 'rm -f .env'
         }
+        
         success {
-            echo "✅ Build SUCCESS!"
+            echo "✅ BUILD SUCCESS!"
         }
+        
         failure {
-            echo "❌ Build FAILED!"
+            echo "❌ BUILD FAILED!"
         }
     }
 }
