@@ -1,83 +1,83 @@
 pipeline {
-    agent {
-        node {
-            label 'docker'  // Runs on Docker Builder EC2
-        }
-    }
+    agent any
     
     environment {
+        // Get API key from Jenkins Credentials
         NEWS_API_KEY = credentials('NEWS_API_KEY')
-        SONARQUBE_TOKEN = credentials('sonarqube-token')
-        DOCKER_IMAGE = 'news-website:latest'
+        DOCKER_REGISTRY = "EC2_3_IP:5000"
+        DOCKER_IMAGE = "${DOCKER_REGISTRY}/news-website"
+        BUILD_TAG = "${BUILD_NUMBER}"
     }
     
     stages {
-        stage('1. Checkout') {
+        stage('🔄 Checkout') {
             steps {
-                echo 'Stage 1: Cloning repository...'
                 checkout scm
             }
         }
         
-        stage('2. Install Dependencies') {
+        stage('📦 Install Dependencies') {
+            agent { label 'docker' }
             steps {
-                echo 'Stage 2: Installing npm dependencies...'
                 sh 'npm install'
             }
         }
         
-        stage('3. SonarQube Analysis') {
+        stage('🐳 Build Docker Image') {
+            agent { label 'docker' }
             steps {
-                echo 'Stage 3: Running SonarQube analysis...'
                 sh '''
-                    sonar-scanner \
-                      -Dsonar.projectKey=news-website \
-                      -Dsonar.projectName="G3sha News Website" \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=http://YOUR_SONARQUBE_IP:9000 \
-                      -Dsonar.login=${SONARQUBE_TOKEN} \
-                      -Dsonar.exclusions=node_modules/**,public/**/*.min.js
+                    # IMPORTANT: Create .env with API key
+                    echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
+                    echo "PORT=3000" >> .env
+                    
+                    # Build image
+                    docker build -t ${DOCKER_IMAGE}:${BUILD_TAG} .
+                    docker tag ${DOCKER_IMAGE}:${BUILD_TAG} ${DOCKER_IMAGE}:latest
                 '''
             }
         }
         
-        stage('4. Docker Builder - Build Image') {
+        stage('📤 Push to Registry') {
+            agent { label 'docker' }
             steps {
-                echo 'Stage 4: Building Docker image...'
                 sh '''
-                    docker build \
-                      --build-arg NEWS_API_KEY=${NEWS_API_KEY} \
-                      -t ${DOCKER_IMAGE} .
+                    docker push ${DOCKER_IMAGE}:${BUILD_TAG}
+                    docker push ${DOCKER_IMAGE}:latest
                 '''
             }
         }
         
-        stage('5. Test Docker Image') {
+        stage('🚀 Deploy') {
+            agent { label 'docker' }
             steps {
-                echo 'Stage 5: Testing Docker image...'
-                sh 'docker run --rm ${DOCKER_IMAGE} node -v'
-                sh 'docker run --rm ${DOCKER_IMAGE} npm -v'
-            }
-        }
-        
-        stage('6. Docker Image Ready') {
-            steps {
-                echo 'Stage 6: Docker Image Ready ✓'
-                echo "Image: ${DOCKER_IMAGE}"
-                sh 'docker images | grep news-website'
+                sh '''
+                    # Stop old container
+                    docker stop news-website || true
+                    docker rm news-website || true
+                    
+                    # Pull image
+                    docker pull ${DOCKER_IMAGE}:latest
+                    
+                    # Run container WITH API KEY ⭐
+                    docker run -d \
+                      --name news-website \
+                      -p 3000:3000 \
+                      -e NEWS_API_KEY="${NEWS_API_KEY}" \
+                      -e PORT=3000 \
+                      --restart always \
+                      ${DOCKER_IMAGE}:latest
+                    
+                    sleep 3
+                    docker ps | grep news-website
+                '''
             }
         }
     }
     
     post {
-        success {
-            echo '✓ Pipeline completed successfully!'
-            echo "✓ Docker image ready: ${DOCKER_IMAGE}"
-            echo "✓ Can deploy to production now"
-        }
-        failure {
-            echo '✗ Pipeline failed!'
-            echo 'Check console output for errors'
+        always {
+            sh 'rm -f .env'  # Clean up after build
         }
     }
 }
