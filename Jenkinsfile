@@ -6,16 +6,11 @@ pipeline {
     }
     
     environment {
-        // Simple variables
         APP_NAME = "news-website"
         PORT = "3000"
-        REGISTRY = "192.168.1.100:5000"
+        REGISTRY = "YOUR_EC2_3_IP:5000"
         IMAGE = "${REGISTRY}/${APP_NAME}"
-        
-        // From Jenkins Credentials
         NEWS_API_KEY = credentials('NEWS_API_KEY')
-        
-        // Build tag
         BUILD_TAG = "${BUILD_NUMBER}-${GIT_COMMIT.take(7)}"
     }
     
@@ -48,15 +43,10 @@ pipeline {
             steps {
                 echo '========== Building Docker Image =========='
                 sh '''
-                    // Create .env file
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
                     echo "PORT=${PORT}" >> .env
-                    
-                    // Build image
                     docker build -t ${IMAGE}:${BUILD_TAG} .
                     docker tag ${IMAGE}:${BUILD_TAG} ${IMAGE}:latest
-                    
-                    echo "✅ Image built: ${IMAGE}:${BUILD_TAG}"
                 '''
             }
         }
@@ -68,7 +58,6 @@ pipeline {
                 sh '''
                     docker push ${IMAGE}:${BUILD_TAG}
                     docker push ${IMAGE}:latest
-                    echo "✅ Image pushed"
                 '''
             }
         }
@@ -76,16 +65,11 @@ pipeline {
         stage('🚀 Deploy') {
             agent { label 'docker' }
             steps {
-                echo '========== Deploying application =========='
+                echo '========== Deploying =========='
                 sh '''
-                    // Stop old container
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
-                    
-                    // Pull latest image
                     docker pull ${IMAGE}:latest
-                    
-                    // Run new container
                     docker run -d \
                       --name ${APP_NAME} \
                       -p ${PORT}:${PORT} \
@@ -93,11 +77,8 @@ pipeline {
                       -e PORT=${PORT} \
                       --restart always \
                       ${IMAGE}:latest
-                    
-                    // Verify
                     sleep 3
                     docker ps | grep ${APP_NAME}
-                    echo "✅ Application deployed"
                 '''
             }
         }
@@ -105,18 +86,13 @@ pipeline {
     
     post {
         always {
-            // Clean up after build
             sh 'rm -f .env'
         }
-        
         success {
-            // Pipeline completed successfully
-            echo "✅ Pipeline SUCCESS!"
+            echo "✅ Build SUCCESS!"
         }
-        
         failure {
-            // Pipeline failed
-            echo "❌ Pipeline FAILED!"
+            echo "❌ Build FAILED!"
         }
     }
 }
