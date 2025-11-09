@@ -13,6 +13,21 @@ if (!API_KEY) {
 
 console.log('✅ API Key is configured!');
 
+// ✅ ADD THIS ROOT ROUTE
+app.get('/', (req, res) => {
+    res.json({
+        message: '📰 News Website API',
+        endpoints: {
+            health: '/health',
+            news: '/api/news'
+        }
+    });
+});
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', hasApiKey: !!API_KEY });
+});
+
 app.get('/api/news', async (req, res) => {
     try {
         const response = await axios.get(
@@ -22,10 +37,6 @@ app.get('/api/news', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-});
-
-app.get('/health', (req, res) => {
-    res.json({ status: 'OK', hasApiKey: !!API_KEY });
 });
 
 app.listen(PORT, () => {
