@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,15 +14,13 @@ if (!API_KEY) {
 
 console.log('✅ API Key is configured!');
 
-// ✅ ADD THIS ROOT ROUTE
+// Serve static files
+app.use(express.static('public'));
+app.use(express.json());
+
+// Root route - serve HTML page
 app.get('/', (req, res) => {
-    res.json({
-        message: '📰 News Website API',
-        endpoints: {
-            health: '/health',
-            news: '/api/news'
-        }
-    });
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/health', (req, res) => {
