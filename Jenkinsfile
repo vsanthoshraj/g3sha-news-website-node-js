@@ -8,8 +8,6 @@ pipeline {
     environment {
         APP_NAME = "news-website"
         PORT = "3000"
-        REGISTRY = "3.225.185.173:5000"
-        IMAGE = "${REGISTRY}/${APP_NAME}"
         NEWS_API_KEY = credentials('NEWS_API_KEY')
         BUILD_TAG = "${BUILD_NUMBER}"
     }
@@ -28,20 +26,9 @@ pipeline {
                 echo '========== Building Docker Image =========='
                 sh '''
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
-                    docker build -t ${IMAGE}:${BUILD_TAG} .
-                    docker tag ${IMAGE}:${BUILD_TAG} ${IMAGE}:latest
-                    echo "✅ Image built: ${IMAGE}:${BUILD_TAG}"
-                '''
-            }
-        }
-        
-        stage('📤 Push to Registry') {
-            steps {
-                echo '========== Pushing to Registry =========='
-                sh '''
-                    docker push ${IMAGE}:${BUILD_TAG}
-                    docker push ${IMAGE}:latest
-                    echo "✅ Image pushed"
+                    docker build -t ${APP_NAME}:${BUILD_TAG} .
+                    docker tag ${APP_NAME}:${BUILD_TAG} ${APP_NAME}:latest
+                    echo "✅ Image built: ${APP_NAME}:${BUILD_TAG}"
                 '''
             }
         }
@@ -52,17 +39,16 @@ pipeline {
                 sh '''
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
-                    docker pull ${IMAGE}:latest
                     docker run -d \
                       --name ${APP_NAME} \
                       -p ${PORT}:${PORT} \
                       -e NEWS_API_KEY="${NEWS_API_KEY}" \
                       -e PORT=${PORT} \
                       --restart always \
-                      ${IMAGE}:latest
+                      ${APP_NAME}:latest
                     sleep 3
                     docker ps | grep ${APP_NAME}
-                    echo "✅ Application deployed"
+                    echo "✅ Application deployed on port ${PORT}"
                 '''
             }
         }
@@ -75,6 +61,7 @@ pipeline {
         
         success {
             echo "✅ BUILD SUCCESS!"
+            echo "App running at: http://52.71.5.19:${PORT}/api/news"
         }
         
         failure {
