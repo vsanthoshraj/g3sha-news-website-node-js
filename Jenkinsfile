@@ -8,7 +8,7 @@ pipeline {
     environment {
         APP_NAME = "news-website"
         PORT = "3000"
-        REGISTRY = "YOUR_EC2_3_IP:5000"
+        REGISTRY = "3.225.185.173:5000"
         IMAGE = "${REGISTRY}/${APP_NAME}"
         NEWS_API_KEY = credentials('NEWS_API_KEY')
         BUILD_TAG = "${BUILD_NUMBER}"
