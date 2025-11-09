@@ -8,11 +8,11 @@ const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.NEWS_API_KEY;
 
 if (!API_KEY) {
-    console.error('❌ ERROR: NEWS_API_KEY is not set!');
+    console.error('ERROR: NEWS_API_KEY is not set!');
     process.exit(1);
 }
 
-console.log('✅ API Key is configured!');
+console.log('API Key is configured!');
 
 // Serve static files
 app.use(express.static('public'));
