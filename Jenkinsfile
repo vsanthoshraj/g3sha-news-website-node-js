@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('🔎 SonarQube Analysis') {
+        stage(' SonarQube Analysis') {
             agent any
             steps {
                 script {
@@ -41,7 +41,7 @@ pipeline {
             }
         }
 
-        stage('🐳 Build Docker Image') {
+        stage('Build Docker Image') {
             agent { label 'docker' }
             steps {
                 echo '========== Building Docker Image =========='
@@ -49,12 +49,12 @@ pipeline {
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
                     docker build -t ${APP_NAME}:${BUILD_TAG} .
                     docker tag ${APP_NAME}:${BUILD_TAG} ${APP_NAME}:latest
-                    echo "✅ Image built: ${APP_NAME}:${BUILD_TAG}"
+                    echo "Image built: ${APP_NAME}:${BUILD_TAG}"
                 """
             }
         }
 
-        stage('🚀 Deploy') {
+        stage(' Deploy') {
             agent { label 'docker' }
             steps {
                 echo '========== Deploying Application =========='
@@ -70,7 +70,7 @@ pipeline {
                       ${APP_NAME}:latest
                     sleep 3
                     docker ps | grep ${APP_NAME}
-                    echo "✅ Application deployed on port ${PORT}"
+                    echo "Application deployed on port ${PORT}"
                 """
             }
         }
@@ -83,11 +83,11 @@ pipeline {
             }
         }
         success {
-            echo "✅ BUILD SUCCESS!"
+            echo " BUILD SUCCESS!"
             echo "App running at: http://52.71.5.19:${PORT}/api/news"
         }
         failure {
-            echo "❌ BUILD FAILED!"
+            echo "BUILD FAILED!"
         }
     }
 }
