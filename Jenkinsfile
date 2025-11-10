@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none  // No global agent, specify per stage
 
     triggers {
         githubPush()
@@ -11,11 +11,12 @@ pipeline {
         NEWS_API_KEY = credentials('NEWS_API_KEY')
         BUILD_TAG = "${BUILD_NUMBER}"
         SONARQUBE_PROJECT_KEY = "news-website"
-        SONARQUBE_SCANNER = tool('SonarQube Scanner') // name from Jenkins 'Global Tool Configuration'
+        SONARQUBE_SCANNER = tool('SonarQube Scanner') // name from Jenkins Global Tool Configuration
     }
 
     stages {
         stage('🔄 Checkout') {
+            agent any // Any available node can run checkout
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
@@ -24,9 +25,10 @@ pipeline {
         }
         
         stage('🔎 SonarQube Analysis') {
+            agent any
             steps {
                 echo '========== Running SonarQube Analysis =========='
-                withSonarQubeEnv('SonarQube') {  // 'My SonarQube' name from global Jenkins config
+                withSonarQubeEnv('SonarQube') {
                     sh '''${SONARQUBE_SCANNER}/bin/sonar-scanner \
                          -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
                          -Dsonar.sources=. \
@@ -37,6 +39,7 @@ pipeline {
         }
         
         stage('🐳 Build Docker Image') {
+            agent { label 'docker' } // Run on Docker node
             steps {
                 echo '========== Building Docker Image =========='
                 sh '''
@@ -49,6 +52,7 @@ pipeline {
         }
 
         stage('🚀 Deploy') {
+            agent { label 'docker' } // Run on Docker node
             steps {
                 echo '========== Deploying Application =========='
                 sh '''
@@ -71,7 +75,7 @@ pipeline {
 
     post {
         always {
-            sh 'rm -f .env'
+            cleanWs()  // Cleans workspace safely
         }
 
         success {
