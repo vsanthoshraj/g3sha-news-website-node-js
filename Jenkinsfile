@@ -1,5 +1,5 @@
 pipeline {
-    agent none  // No global agent, specify per stage
+    agent none  // Disable global agent, assign per stage
 
     triggers {
         githubPush()
@@ -11,12 +11,11 @@ pipeline {
         NEWS_API_KEY = credentials('NEWS_API_KEY')
         BUILD_TAG = "${BUILD_NUMBER}"
         SONARQUBE_PROJECT_KEY = "news-website"
-        SONARQUBE_SCANNER = tool('SonarQube Scanner') // must match Jenkins Global Tool Configuration
     }
 
     stages {
         stage('🔄 Checkout') {
-            agent any // run on any available node
+            agent any  // Run on any available node
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
@@ -26,57 +25,63 @@ pipeline {
 
         stage('🔎 SonarQube Analysis') {
             agent any
+            tools {
+                sonarScanner 'SonarQube Scanner' // Assuming scanner is installed in Jenkins Global Tools
+            }
             steps {
                 echo '========== Running SonarQube Analysis =========='
-                withSonarQubeEnv('SonarQube') {  // must match SonarQube server name in Jenkins config
-                    sh '''${SONARQUBE_SCANNER}/bin/sonar-scanner \
-                         -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
-                         -Dsonar.sources=. \
-                         -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-                    '''
+                withSonarQubeEnv('SonarQube') {  // Must match SonarQube server config name
+                    sh """
+                        sonar-scanner \
+                        -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
+                        -Dsonar.sources=. \
+                        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                    """
                 }
             }
         }
 
         stage('🐳 Build Docker Image') {
-            agent { label 'docker' } // run on docker node
+            agent { label 'docker' } // Run on Docker-enabled node
             steps {
                 echo '========== Building Docker Image =========='
-                sh '''
+                sh """
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
                     docker build -t ${APP_NAME}:${BUILD_TAG} .
                     docker tag ${APP_NAME}:${BUILD_TAG} ${APP_NAME}:latest
                     echo "✅ Image built: ${APP_NAME}:${BUILD_TAG}"
-                '''
+                """
             }
         }
 
         stage('🚀 Deploy') {
-            agent { label 'docker' } // run on docker node
+            agent { label 'docker' }
             steps {
                 echo '========== Deploying Application =========='
-                sh '''
+                sh """
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
                     docker run -d \
-                      --name ${APP_NAME} \
-                      -p ${PORT}:${PORT} \
-                      -e NEWS_API_KEY="${NEWS_API_KEY}" \
-                      -e PORT=${PORT} \
-                      --restart always \
-                      ${APP_NAME}:latest
+                        --name ${APP_NAME} \
+                        -p ${PORT}:${PORT} \
+                        -e NEWS_API_KEY="${NEWS_API_KEY}" \
+                        -e PORT=${PORT} \
+                        --restart always \
+                        ${APP_NAME}:latest
                     sleep 3
                     docker ps | grep ${APP_NAME}
                     echo "✅ Application deployed on port ${PORT}"
-                '''
+                """
             }
         }
     }
 
     post {
         always {
-            node {
-                cleanWs()  // clean workspace inside node context
+            // Run cleanWs inside an agent to avoid 'missing context' errors
+            // Use the docker node to clean workspace related to docker jobs
+            node('docker') {
+                cleanWs()
             }
         }
         success {
