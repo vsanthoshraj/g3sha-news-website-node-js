@@ -1,23 +1,38 @@
 pipeline {
     agent any
-    
+
     triggers {
         githubPush()
     }
-    
+
     environment {
         APP_NAME = "news-website"
         PORT = "3000"
         NEWS_API_KEY = credentials('NEWS_API_KEY')
         BUILD_TAG = "${BUILD_NUMBER}"
+        SONARQUBE_PROJECT_KEY = "news-website"
+        SONARQUBE_SCANNER = tool('SonarQube Scanner') // name from Jenkins 'Global Tool Configuration'
     }
-    
+
     stages {
         stage('🔄 Checkout') {
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
                 sh 'git log --oneline -1'
+            }
+        }
+        
+        stage('🔎 SonarQube Analysis') {
+            steps {
+                echo '========== Running SonarQube Analysis =========='
+                withSonarQubeEnv('My SonarQube') {  // 'My SonarQube' name from global Jenkins config
+                    sh '''${SONARQUBE_SCANNER}/bin/sonar-scanner \
+                         -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
+                         -Dsonar.sources=. \
+                         -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                    '''
+                }
             }
         }
         
@@ -32,7 +47,7 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('🚀 Deploy') {
             steps {
                 echo '========== Deploying Application =========='
@@ -53,17 +68,17 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
             sh 'rm -f .env'
         }
-        
+
         success {
             echo "✅ BUILD SUCCESS!"
             echo "App running at: http://52.71.5.19:${PORT}/api/news"
         }
-        
+
         failure {
             echo "❌ BUILD FAILED!"
         }
