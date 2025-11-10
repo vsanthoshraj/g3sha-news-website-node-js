@@ -1,4 +1,4 @@
-# News Website 📰
+# News Website 
 **Real-Time News Aggregator powered by Node.js and NewsAPI**
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18-green)]()
