@@ -17,7 +17,7 @@ pipeline {
         stage(' Checkout') {
             agent any
             steps {
-                echo '========== Checking out code =========='
+                echo 'Checking out code'
                 checkout scm
                 sh 'git log --oneline -1'
             }
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                     def scannerHome = tool 'SonarQube Scanner'  // Name exactly as shown in your Jenkins tools
-                    echo '========== Running SonarQube Analysis =========='
+                    echo 'Running SonarQube Analysis'
                     withSonarQubeEnv('SonarQube') {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
@@ -44,7 +44,7 @@ pipeline {
         stage('Build Docker Image') {
             agent { label 'docker' }
             steps {
-                echo '========== Building Docker Image =========='
+                echo ' Building Docker Image'
                 sh """
                     echo "NEWS_API_KEY=${NEWS_API_KEY}" > .env
                     docker build -t ${APP_NAME}:${BUILD_TAG} .
@@ -57,7 +57,7 @@ pipeline {
         stage(' Deploy') {
             agent { label 'docker' }
             steps {
-                echo '========== Deploying Application =========='
+                echo ' Deploying Application'
                 sh """
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
