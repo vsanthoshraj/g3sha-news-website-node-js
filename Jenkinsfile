@@ -1,5 +1,5 @@
 pipeline {
-    agent none  // Disable global agent, assign explicitly per stage
+    agent none  // Disable global agent, assign per stage
 
     triggers {
         githubPush()
@@ -15,7 +15,7 @@ pipeline {
 
     stages {
         stage('🔄 Checkout') {
-            agent any  // Will run on any available node
+            agent any
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
@@ -25,24 +25,24 @@ pipeline {
 
         stage('🔎 SonarQube Analysis') {
             agent any
-            tools {
-                sonarRunner 'SonarQube Scanner'  // Correct tool name for SonarQube scanner
-            }
             steps {
-                echo '========== Running SonarQube Analysis =========='
-                withSonarQubeEnv('SonarQube') {  // Matches SonarQube server config name in Jenkins
-                    sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
-                        -Dsonar.sources=. \
-                        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-                    """
+                script {
+                    def scannerHome = tool 'SonarQube Scanner'  // Name exactly as shown in your Jenkins tools
+                    echo '========== Running SonarQube Analysis =========='
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
+                            -Dsonar.sources=. \
+                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                        """
+                    }
                 }
             }
         }
 
         stage('🐳 Build Docker Image') {
-            agent { label 'docker' } // Run Docker stages on Docker-enabled node
+            agent { label 'docker' }
             steps {
                 echo '========== Building Docker Image =========='
                 sh """
@@ -79,7 +79,7 @@ pipeline {
     post {
         always {
             node('docker') {
-                cleanWs()  // Run workspace cleanup on docker node, avoids context issues
+                cleanWs()
             }
         }
         success {
