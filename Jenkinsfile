@@ -14,7 +14,7 @@ pipeline {
     }
 
     stages {
-        stage('🔄 Checkout') {
+        stage(' Checkout') {
             agent any
             steps {
                 echo '========== Checking out code =========='
