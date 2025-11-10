@@ -35,6 +35,10 @@ docker run -d \
 
 ---
 
+perview 
+<img width="959" height="511" alt="image" src="https://github.com/user-attachments/assets/9198478e-5d96-4f7e-9544-82b9624b225d" />
+
+
 ## 📖 What This App Does
 
 I built a **real-time news website** that shows the latest headlines from around the world.
