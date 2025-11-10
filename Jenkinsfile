@@ -1,5 +1,5 @@
 pipeline {
-    agent none  // Disable global agent, assign per stage
+    agent none  // Disable global agent, assign explicitly per stage
 
     triggers {
         githubPush()
@@ -15,7 +15,7 @@ pipeline {
 
     stages {
         stage('🔄 Checkout') {
-            agent any  // Run on any available node
+            agent any  // Will run on any available node
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
@@ -26,11 +26,11 @@ pipeline {
         stage('🔎 SonarQube Analysis') {
             agent any
             tools {
-                sonarScanner 'SonarQube Scanner' // Assuming scanner is installed in Jenkins Global Tools
+                sonarRunner 'SonarQube Scanner'  // Correct tool name for SonarQube scanner
             }
             steps {
                 echo '========== Running SonarQube Analysis =========='
-                withSonarQubeEnv('SonarQube') {  // Must match SonarQube server config name
+                withSonarQubeEnv('SonarQube') {  // Matches SonarQube server config name in Jenkins
                     sh """
                         sonar-scanner \
                         -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
@@ -42,7 +42,7 @@ pipeline {
         }
 
         stage('🐳 Build Docker Image') {
-            agent { label 'docker' } // Run on Docker-enabled node
+            agent { label 'docker' } // Run Docker stages on Docker-enabled node
             steps {
                 echo '========== Building Docker Image =========='
                 sh """
@@ -62,12 +62,12 @@ pipeline {
                     docker stop ${APP_NAME} || true
                     docker rm ${APP_NAME} || true
                     docker run -d \
-                        --name ${APP_NAME} \
-                        -p ${PORT}:${PORT} \
-                        -e NEWS_API_KEY="${NEWS_API_KEY}" \
-                        -e PORT=${PORT} \
-                        --restart always \
-                        ${APP_NAME}:latest
+                      --name ${APP_NAME} \
+                      -p ${PORT}:${PORT} \
+                      -e NEWS_API_KEY="${NEWS_API_KEY}" \
+                      -e PORT=${PORT} \
+                      --restart always \
+                      ${APP_NAME}:latest
                     sleep 3
                     docker ps | grep ${APP_NAME}
                     echo "✅ Application deployed on port ${PORT}"
@@ -78,10 +78,8 @@ pipeline {
 
     post {
         always {
-            // Run cleanWs inside an agent to avoid 'missing context' errors
-            // Use the docker node to clean workspace related to docker jobs
             node('docker') {
-                cleanWs()
+                cleanWs()  // Run workspace cleanup on docker node, avoids context issues
             }
         }
         success {
