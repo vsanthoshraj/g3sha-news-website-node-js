@@ -1,453 +1,603 @@
-# News Website CI/CD Project 🚀
-**End-to-End DevOps Automation with AWS, Terraform, Jenkins, Docker, SonarQube & GitHub**
+# News Website 📰
+**Real-Time News Aggregator powered by Node.js and NewsAPI**
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
-[![AWS](https://img.shields.io/badge/AWS-EC2-orange)]()
-[![Docker](https://img.shields.io/badge/Docker-containerized-blue)]()
-[![Terraform](https://img.shields.io/badge/IaC-Terraform-purple)]()
-
----
-
-## 📋 Table of Contents
-
-1. [Project Overview](#project-overview)
-2. [Architecture](#architecture)
-3. [Technologies Used](#technologies-used)
-4. [How It Works](#how-it-works)
-5. [Application Features](#application-features)
-6. [CI/CD Pipeline](#cicd-pipeline)
-7. [Infrastructure Setup](#infrastructure-setup)
-8. [Security Best Practices](#security-best-practices)
-9. [How to Run This Project](#how-to-run-this-project)
-10. [Screenshots & Demos](#screenshots--demos)
-11. [Why This Project Stands Out](#why-this-project-stands-out)
+[![Node.js](https://img.shields.io/badge/Node.js-v18-green)]()
+[![Express](https://img.shields.io/badge/Express-Web%20Framework-blue)]()
+[![NewsAPI](https://img.shields.io/badge/NewsAPI-Live%20Data-orange)]()
+[![Docker](https://img.shields.io/badge/Docker-Containerized-blue)]()
+[![Live](https://img.shields.io/badge/Status-Live-brightgreen)]()
 
 ---
 
-## 🎯 Project Overview
+## 🚀 Quick Start
 
-This is a **production-ready CI/CD pipeline** that automatically builds, tests, and deploys a **Node.js news aggregation website** on AWS cloud infrastructure.
+### Try It Yourself (No Setup Needed!)
 
-**What makes this special:**
-- Real AWS cloud infrastructure (not a local simulation)
-- Fully automated pipeline from code push to live deployment
-- Industry-standard tools and best practices
-- Live news data integration using NewsAPI
-- Complete DevOps lifecycle demonstration
+```bash
+# Pull the Docker image
+docker pull vsanthoshraj/news-website:latest
 
-**Perfect for:** Job interviews, portfolio projects, resume building, and learning real-world DevOps practices.
+# Run with your own NewsAPI key (get free key from newsapi.org)
+docker run -d \
+  -e NEWS_API_KEY=your_free_api_key_here \
+  -p 3000:3000 \
+  vsanthoshraj/news-website:latest
 
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────┐
-│   GitHub    │ ◄─── Developer pushes code
-└──────┬──────┘
-       │ Webhook Trigger
-       ▼
-┌─────────────────┐
-│  Jenkins (EC2)  │ ◄─── Orchestrates Pipeline
-└────────┬────────┘
-         │
-    ┌────┴────┬─────────┬──────────┐
-    ▼         ▼         ▼          ▼
-┌────────┐ ┌──────┐ ┌──────┐ ┌─────────┐
-│SonarQube│ │Docker│ │ AWS │ │Terraform│
-│  (EC2) │ │(EC2) │ │ EC2 │ │  (IaC)  │
-└────────┘ └──────┘ └──────┘ └─────────┘
+# Visit: http://localhost:3000
 ```
 
-### Infrastructure Components
+### Get Your NewsAPI Key
 
-| Component | Instance | Purpose |
-|-----------|----------|---------|
-| **Terraform** | EC2-1 | Infrastructure as Code - provisions all AWS resources |
-| **Jenkins** | EC2-2 | CI/CD orchestration and automation |
-| **Docker Host** | EC2-3 | Container runtime for application deployment |
-| **SonarQube** | EC2-4 | Static code analysis and quality gates |
+1. Go to [https://newsapi.org](https://newsapi.org)
+2. Sign up (free tier available)
+3. Get your API key
+4. Use it above!
 
 ---
 
-## 💻 Technologies Used
+## 📖 What This App Does
 
-### DevOps & Cloud
-- **AWS EC2** - Cloud compute instances
-- **Terraform** - Infrastructure as Code (IaC)
-- **Jenkins** - CI/CD automation server
-- **Docker** - Container platform
-- **SonarQube** - Code quality analysis
-- **GitHub** - Version control and webhook triggers
+I built a **real-time news website** that shows the latest headlines from around the world.
 
-### Application Stack
-- **Node.js** - Backend runtime
-- **Express.js** - Web framework
+**Features:**
+- 🔍 Search news by keywords
+- 🌍 News from 150,000+ sources
+- 📰 Latest headlines and articles
+- 🌐 Global coverage in 55 countries
+- 🗣️ Multiple language support
+- ⚡ Real-time updates
+
+---
+
+## 🏗️ How It Works
+
+**Simple Explanation:**
+
+1. You visit the website
+2. You search for a topic (e.g., "artificial intelligence")
+3. My backend asks NewsAPI for articles about that topic
+4. NewsAPI sends back the latest articles
+5. I display them on your screen
+
+**Technical Flow:**
+
+```
+Frontend (Your Browser)
+    ↓
+User searches "bitcoin"
+    ↓
+Node.js Backend (server.js)
+    ↓
+Makes API call to NewsAPI
+    ↓
+NewsAPI returns JSON data
+    ↓
+Backend formats & sends to frontend
+    ↓
+Frontend displays articles
+```
+
+---
+
+## 💻 Tech Stack
+
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web framework for routing
+- **Axios** - HTTP client for API calls
+
+### Frontend
+- **HTML** - Structure
+- **CSS** - Styling
+- **JavaScript** - Interactivity
+
+### API & Hosting
 - **NewsAPI** - Live news data source
-- **HTML/CSS/JavaScript** - Frontend
+- **Docker** - Containerization
+- **AWS/Jenkins** - CI/CD deployment
 
 ---
 
-## 🔄 How It Works
-
-### Simple Explanation (Layman's Terms)
-
-1. **Developer makes changes** - You update code and push to GitHub
-2. **GitHub notifies Jenkins** - A webhook automatically triggers the pipeline
-3. **Code quality check** - SonarQube analyzes code for bugs, security issues, and code smells
-4. **Build container** - Docker packages the application into a portable container
-5. **Deploy automatically** - The new version goes live on the server
-6. **Done!** - Your changes are live in minutes, not hours
-
-### Technical Flow
+## 📁 Project Structure
 
 ```
-GitHub Push 
-    → Jenkins Webhook Trigger
-    → SCM Checkout
-    → SonarQube Static Analysis
-    → Docker Image Build
-    → Container Deployment
-    → Health Check
-    → Success/Failure Notification
+news-website/
+├── public/                    # Frontend files
+│   ├── index.html            # Main webpage
+│   ├── styles.css            # Styling
+│   └── script.js             # Client-side logic
+│
+├── server.js                 # Backend entry point
+├── package.json              # Node dependencies
+├── package-lock.json         # Dependency lock
+├── Dockerfile                # Container definition
+├── Jenkinsfile               # CI/CD pipeline
+├── .env.example              # Environment template
+├── .gitignore                # Git exclusions
+└── README.md                 # This file!
 ```
 
 ---
 
-## 🌐 Application Features
+## 🎯 Key Features Explained
 
-### News Website Functionality
+### 1. Search Functionality
+I search for news articles by keyword:
 
-The deployed application is a **real-time news aggregator** powered by NewsAPI:
-
-**Key Features:**
-- 🔍 **Search News** - Search by keywords, topics, or phrases
-- 🌍 **Global Coverage** - News from 150,000+ sources in 55 countries
-- 🗣️ **Multi-language** - Support for 14 languages
-- 📅 **Date Filtering** - Search news by date range
-- 🏷️ **Source Filtering** - Filter by specific domains or exclude sources
-- ⚡ **Real-time Updates** - Always up-to-date with latest headlines
-
-**How NewsAPI Integration Works:**
-
-1. User requests news via web interface
-2. Node.js backend receives request with search parameters
-3. Server makes authenticated API call to NewsAPI
-4. NewsAPI returns JSON data with articles
-5. Backend formats and sends data to frontend
-6. User sees latest news articles displayed
-
-**Sample API Call:**
 ```javascript
-// server.js
+// Frontend sends search query
+const query = document.getElementById('searchInput').value;
+
+// Backend receives & queries NewsAPI
 app.get('/api/news', async (req, res) => {
-  const query = req.query.q || 'technology';
+  const q = req.query.q || 'technology';
   const apiKey = process.env.NEWS_API_KEY;
   
-  try {
-    const response = await axios.get(
-      `https://newsapi.org/v2/everything?q=${query}&apiKey=${apiKey}`
-    );
-    res.json(response.data.articles);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const response = await axios.get(
+    `https://newsapi.org/v2/everything?q=${q}&apiKey=${apiKey}`
+  );
+  
+  res.json(response.data.articles);
 });
 ```
 
+### 2. Real-Time Data
+Articles update automatically:
+- Latest news from 150,000+ sources
+- Coverage in 55 countries
+- 14 language support
+
+### 3. Responsive Design
+Works on:
+- 💻 Desktop browsers
+- 📱 Mobile phones
+- 📱 Tablets
+
+### 4. Secure API Key Handling
+I never expose the API key:
+- Stored in environment variables
+- Never in source code
+- Never in Docker image
+- Injected at runtime only
+
 ---
 
-## 🔧 CI/CD Pipeline
+## 🚀 Installation & Setup
 
-### Jenkins Pipeline Stages
+### Local Development
 
+**Prerequisites:**
+- Node.js v18 or higher
+- npm or yarn
+- NewsAPI key (free from https://newsapi.org)
 
-
-### Pipeline Execution Example
-
-
-
----
-
-## 🏗️ Infrastructure Setup
-
-### Terraform Structure
-
-```
-terraform/
-├── ec2/
-│   └── main.tf          # EC2 instance definitions
-├── security_groups/
-│   └── main.tf          # Firewall rules
-├── keypair/
-│   └── main.tf          # SSH key configuration
-├── vpc/
-│   └── main.tf          # Network setup
-├── main.tf              # Root module
-├── variables.tf         # Input variables
-├── outputs.tf           # Output values
-└── provider.tf          # AWS provider config
-```
-
-### Key Terraform Resources
-
-- **4x EC2 instances** - Terraform, Jenkins, Docker, SonarQube
-- **Security Groups** - Controlled ingress/egress rules
-- **SSH Key Pairs** - Secure instance access
-- **VPC Configuration** - Network isolation
-
-### Deploy Infrastructure
+**Setup Steps:**
 
 ```bash
-# Initialize Terraform
-terraform init
+# 1. Clone the repository
+git clone https://github.com/vsanthoshraj/g3sha-news-website-node-js.git
+cd g3sha-news-website-node-js
 
-# Plan infrastructure changes
-terraform plan
+# 2. Install dependencies
+npm install
 
-# Apply changes
-terraform apply -auto-approve
+# 3. Create .env file
+cp .env.example .env
 
-# Destroy when done
-terraform destroy
+# 4. Add your NewsAPI key to .env
+# Edit .env and add:
+# NEWS_API_KEY=your_key_here
+# PORT=3000
+
+# 5. Start the server
+npm start
+
+# 6. Open browser
+# Visit: http://localhost:3000
 ```
 
----
-
-## 🔒 Security Best Practices
-
-### Secrets Management
-
-✅ **What We Do Right:**
-- API keys stored in Jenkins credentials
-- Environment variables for runtime secrets
-- `.gitignore` prevents credential commits
-- Docker images contain NO hardcoded secrets
-- Secrets passed at container runtime only
-
-❌ **What We Avoid:**
-- No secrets in source code
-- No secrets in Docker images
-- No secrets in version control
-- No plaintext credential storage
-
-### Example - Secure Secret Usage
+### With Docker
 
 ```bash
-# Jenkins injects secret at runtime
+# Build image locally
+docker build -t news-website:latest .
+
+# Run container
 docker run -d \
-  --name news-website \
-  -e NEWS_API_KEY="${NEWS_API_KEY}" \
+  -e NEWS_API_KEY=your_key_here \
   -p 3000:3000 \
   news-website:latest
 ```
 
-### AWS Security
-
-- Security groups restrict traffic to necessary ports only
-- SSH access via key pairs (no passwords)
-- Principle of least privilege for IAM roles
-
----
-
-## 🚀 How to Run This Project
-
-### Prerequisites
-
-- AWS Account
-- GitHub Account
-- NewsAPI Account (free tier: https://newsapi.org)
-- Basic knowledge of Linux/command line
-
-### Step 1: Deploy Infrastructure
+### With Docker Hub Image
 
 ```bash
-# Clone Terraform repo
-git clone <terraform-repo-url>
-cd terraform
+# Pull pre-built image
+docker pull vsanthoshraj/news-website:latest
 
-# Configure AWS credentials
-export AWS_ACCESS_KEY_ID="your-key"
-export AWS_SECRET_ACCESS_KEY="your-secret"
-
-# Deploy infrastructure
-terraform init
-terraform apply
+# Run it
+docker run -d \
+  -e NEWS_API_KEY=your_key_here \
+  -p 3000:3000 \
+  vsanthoshraj/news-website:latest
 ```
 
-### Step 2: Configure Jenkins
+---
 
-1. Access Jenkins at `http://<jenkins-ec2-ip>:8080`
-2. Install plugins: Git, Docker, SonarQube Scanner, Pipeline
-3. Add GitHub webhook: `http://<jenkins-ip>:8080/github-webhook/`
-4. Create Jenkins credentials:
-   - GitHub SSH key
-   - NewsAPI key
-   - Docker Hub credentials (optional)
-
-### Step 3: Configure SonarQube
-
-1. Access SonarQube at `http://<sonarqube-ec2-ip>:9000`
-2. Create project with key: `news-website`
-3. Generate authentication token
-4. Add token to Jenkins SonarQube configuration
-
-### Step 4: Setup Docker Host
+## 📋 Available Scripts
 
 ```bash
-# SSH into Docker EC2
-ssh -i your-key.pem ubuntu@<docker-ec2-ip>
+# Start development server
+npm start
 
-# Install Docker
-sudo apt update
-sudo apt install docker.io -y
-sudo usermod -aG docker ubuntu
+# Run with nodemon (auto-restart on changes)
+npm run dev
 
-# Configure as Jenkins agent
+# Start production server
+npm run prod
+
+# View all scripts
+cat package.json
 ```
 
-### Step 5: Deploy Application
+---
+
+## 🔧 API Endpoints
+
+### GET /api/news
+Fetch news articles
+
+**Query Parameters:**
+- `q` (required) - Search query (default: "technology")
+- `language` (optional) - Language code (en, es, fr, etc.)
+- `sortBy` (optional) - Sort by (publishedAt, relevancy, popularity)
+
+**Example Requests:**
+```bash
+# Search for AI news
+GET /api/news?q=artificial%20intelligence
+
+# Search in Spanish
+GET /api/news?q=noticias&language=es
+
+# Sort by popularity
+GET /api/news?q=bitcoin&sortBy=popularity
+```
+
+**Response:**
+```json
+{
+  "articles": [
+    {
+      "source": { "id": null, "name": "Example.com" },
+      "author": "John Doe",
+      "title": "Breaking News...",
+      "description": "Article description...",
+      "url": "https://example.com/article",
+      "urlToImage": "https://example.com/image.jpg",
+      "publishedAt": "2025-11-10T12:00:00Z",
+      "content": "Full article content..."
+    }
+  ]
+}
+```
+
+---
+
+## 🌐 Frontend (index.html)
+
+I built a clean, user-friendly interface:
+
+```html
+<div class="search-container">
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder="Search news..."
+  />
+  <button onclick="searchNews()">Search</button>
+</div>
+
+<div id="newsList" class="news-container">
+  <!-- Articles displayed here -->
+</div>
+```
+
+**Features:**
+- Search bar at top
+- News cards displaying articles
+- Click to read full article
+- Responsive layout
+
+---
+
+## 🔒 Security
+
+### How I Protect Your Data
+
+✅ **API Key Security:**
+- Never exposed in frontend
+- Never committed to Git
+- Only stored in `.env` file
+- Injected at runtime
+
+✅ **Code Security:**
+- No secrets in source code
+- `.gitignore` excludes sensitive files
+- Environment variables for config
+- Docker images have no hardcoded keys
+
+✅ **HTTPS Ready:**
+- Can be deployed behind proxy
+- Works with SSL certificates
+- Production-ready configuration
+
+---
+
+## 🐳 Docker Deployment
+
+### Docker Image Details
+
+**What's Included:**
+- Node.js runtime
+- Express server
+- All app dependencies
+- Frontend files
+
+**What's NOT Included:**
+- API keys ✅ (kept secret!)
+- Environment files
+- Secrets of any kind
+
+---
+
+## 🚀 Deployment Options
+
+### Option 1: Heroku
+```bash
+git push heroku main
+```
+
+### Option 2: AWS/EC2
+```bash
+docker run -d -e NEWS_API_KEY=key -p 3000:3000 image-name
+```
+
+### Option 3: Railway, Render, Vercel
+Deploy the Docker image directly
+
+### Option 4: Local Server
+```bash
+npm start
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### "API key not found"
+- Check `.env` file exists
+- Verify `NEWS_API_KEY=` has correct value
+- Restart server after editing `.env`
+
+### "Port 3000 already in use"
+```bash
+# Use different port
+PORT=3001 npm start
+
+# Or kill existing process
+lsof -i :3000
+kill -9 <PID>
+```
+
+### "CORS errors"
+- Verify NewsAPI endpoint is correct
+- Check API key is valid
+- Try in incognito mode
+
+### "No articles showing"
+- Verify internet connection
+- Check NewsAPI quota (free tier has limits)
+- Try different search term
+
+---
+
+## 📊 NewsAPI Limits (Free Tier)
+
+- **Requests:** 100 per day
+- **Articles:** Up to 100 per request
+- **Data:** News from past 30 days
+- **Update:** Real-time (articles updated constantly)
+
+**For production:** Consider paid plans from NewsAPI
+
+---
+
+## 🛠️ Development
+
+### Adding New Features
+
+**Example: Add date filtering**
+
+```javascript
+// In server.js
+app.get('/api/news', async (req, res) => {
+  const fromDate = req.query.from || null;
+  
+  const response = await axios.get(
+    `https://newsapi.org/v2/everything?from=${fromDate}&...`
+  );
+  
+  res.json(response.data.articles);
+});
+```
+
+### Testing Locally
 
 ```bash
-# Clone application repo
-git clone <app-repo-url>
-cd news-website
+# Terminal 1 - Start server
+npm start
 
-# Push to trigger pipeline
-git add .
-git commit -m "Initial deployment"
-git push origin main
-```
-
-### Step 6: Access Your Website
-
-```
-http://<docker-ec2-ip>:3000
+# Terminal 2 - Test API
+curl "http://localhost:3000/api/news?q=bitcoin"
 ```
 
 ---
 
-## 📸 Screenshots & Demos
+## 📚 Dependencies
 
-### Add Your Own Screenshots
+### Production
+- **express** - Web framework
+- **axios** - HTTP client
+- **dotenv** - Environment variables
 
-- Jenkins pipeline execution
-- SonarQube analysis dashboard
-- Docker container running
-- Live news website
-- Terraform apply output
-- AWS EC2 console showing instances
+### Development
+- **nodemon** - Auto-restart on changes
 
----
-
-## 🌟 Why This Project Stands Out
-
-### For Recruiters
-
-✅ **Real AWS deployment** - Not just a local lab
-✅ **Production-ready practices** - Industry standard tools
-✅ **Complete automation** - Zero manual deployment steps
-✅ **Modern stack** - Latest DevOps technologies
-✅ **Well documented** - Professional README and code comments
-✅ **Live demo** - Actual working application
-✅ **Cost-conscious** - Uses free tiers and minimal resources
-
-### For Technical Reviewers
-
-✅ **Infrastructure as Code** - Terraform best practices
-✅ **CI/CD Pipeline** - Jenkins declarative pipeline
-✅ **Code Quality** - SonarQube integration
-✅ **Containerization** - Docker multi-stage builds
-✅ **Security** - Proper secrets management
-✅ **Monitoring** - Health checks and logging
-✅ **Git Workflow** - Webhook-driven automation
-✅ **API Integration** - Real external service (NewsAPI)
-
-### Skills Demonstrated
-
-| Category | Skills |
-|----------|--------|
-| **Cloud** | AWS EC2, VPC, Security Groups, IAM |
-| **IaC** | Terraform, Infrastructure provisioning |
-| **CI/CD** | Jenkins Pipeline, GitHub Webhooks, Automation |
-| **Containers** | Docker, Image building, Container |
-| **Code Quality** | SonarQube, Static analysis, Quality gates |
-| **Backend** | Node.js, Express.js, REST API integration |
-| **Frontend** | HTML, CSS, JavaScript |
-| **Security** | Secrets management, Secure deployments |
-| **Version Control** | Git, GitHub, Branching strategies |
-
----
-
-## 📚 Project Structure
-
-### Application Repository
-
-```
-news-website/
-├── public/
-│   ├── index.html      # Frontend UI
-│   ├── styles.css      # Styling
-│   └── script.js       # Client-side JS
-├── server.js           # Node.js backend
-├── package.json        # Dependencies
-├── Dockerfile          # Container definition
-├── Jenkinsfile         # Pipeline definition
-└── .gitignore          # Excluded files
-```
-
-### Terraform Repository
-
-```
-terraform/
-├── ec2/
-├── security_groups/
-├── keypair/
-├── vpc/
-├── main.tf
-├── variables.tf
-└── outputs.tf
+```json
+{
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  }
+}
 ```
 
 ---
 
-## 🎓 What I Learned
+## 🔗 Links & Resources
 
-- **Cloud Architecture** - Designing multi-instance AWS infrastructure
-- **Automation** - End-to-end pipeline automation
-- **DevOps Culture** - Collaboration between dev and ops
-- **Container Technology** - Docker best practices
-- **Code Quality** - Implementing quality gates
-- **Infrastructure as Code** - Reproducible infrastructure
-- **Security** - Secure credential handling
-- **API Integration** - Working with external services
-- **Problem Solving** - Debugging CI/CD issues
-
-
-## 🔗 Links
-
-- **GitHub Repo (App)**: https://github.com/vsanthoshraj/g3sha-news-website-node-js
-- **GitHub Repo (Terraform)**: https://github.com/vsanthoshraj/<terraform-repo>
-- **Docker Hub**: https://hub.docker.com/r/vsanthoshraj/news-website
+- **GitHub Repo**: https://github.com/vsanthoshraj/g3sha-news-website-node-js
 - **NewsAPI**: https://newsapi.org
+- **Docker Hub**: https://hub.docker.com/r/vsanthoshraj/news-website
+- **Live Demo**: http://<server-ip>:3000
 
 ---
 
-## 📞 Contact
+## 📖 How to Use This App
 
-**Santhosh Raj V ** - [LinkedIn](your-linkedin) | [Email](mailto:sksanthosh88409@gmail.com)
-Chennai | 9566066846 
+### For Users
+1. Open website
+2. Enter search term
+3. Browse articles
+4. Click to read full article
+
+### For Developers
+1. Clone repo
+2. Install dependencies (`npm install`)
+3. Add NewsAPI key to `.env`
+4. Run server (`npm start`)
+5. Customize as needed
+
+### For DevOps/Docker Users
+1. Pull image (`docker pull vsanthoshraj/news-website`)
+2. Run with your API key
+3. Deploy to your infrastructure
+
+---
+
+## 💡 How This Was Built
+
+This app was built as part of a complete CI/CD project that includes:
+- **Infrastructure:** AWS EC2 (Terraform)
+- **CI/CD:** Jenkins automation
+- **Quality:** SonarQube analysis
+- **Container:** Docker deployment
+- **Monitoring:** Email alerts
+
+Learn more: [Main CI/CD Project README](https://github.com/vsanthoshraj/terraform-cicd-infrastructure)
+
+---
+
+## 📝 Environment Variables
+
+Create `.env` file:
+
+```env
+# Required
+NEWS_API_KEY=your_newsapi_key_here
+
+# Optional
+PORT=3000
+NODE_ENV=development
+```
+
+**Never commit `.env` to Git!**
+
+---
+
+## 🤝 Contributing
+
+Want to improve this app?
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Push and create a Pull Request
+
+**Ideas for enhancement:**
+- Add trending topics
+- Save favorite articles
+- Add dark mode
+- Add more filters
+- Multi-language UI
+
+---
+
+## 📄 License
+
+This project is open source under the [MIT License](LICENSE).
+
+---
+
+## 📞 Contact & Support
+
+**Creator:** Santhosh Raj V  
+📧 Email: sksanthosh88409@gmail.com  
+📱 Phone: 9566066846  
+📍 Location: Chennai, India  
+🔗 GitHub: [@vsanthoshraj](https://github.com/vsanthoshraj)
+
+---
+
+## 🙏 Credits
+
+- **NewsAPI** - For providing free news data
+- **Node.js Community** - For the runtime
+- **Express.js** - For the web framework
+- **Docker** - For containerization
 
 ---
 
 
-## 🙏 Acknowledgments
+---
 
-- NewsAPI for providing free news data
-- Jenkins community for excellent CI/CD tools
-- SonarSource for code quality platform
-- Docker for containerization technology
-- HashiCorp for Terraform
+## Quick Command Reference
 
+```bash
+# Install
+npm install
 
+# Development
+npm start
+
+# View logs
+npm start | tail -f
+
+# Stop server
+Ctrl + C
+
+# Docker build
+docker build -t news-website:latest .
+
+# Docker run
+docker run -d -e NEWS_API_KEY=key -p 3000:3000 news-website:latest
+
+# Docker stop
+docker stop <container-id>
+
+# Docker logs
+docker logs <container-id>
+```
 
