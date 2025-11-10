@@ -45,10 +45,10 @@ I built a **real-time news website** that shows the latest headlines from around
 
 **Features:**
 - 🔍 Search news by keywords
-- 🌍 News from 150,000+ sources
+- 🌍 News from 1000+ sources
 - 📰 Latest headlines and articles
 - 🌐 Global coverage in 55 countries
-- 🗣️ Multiple language support
+- 🗣️ Multiple language support in NewsAPI
 - ⚡ Real-time updates
 
 ---
@@ -125,39 +125,20 @@ news-website/
 
 ## 🎯 Key Features Explained
 
-### 1. Search Functionality
-I search for news articles by keyword:
 
-```javascript
-// Frontend sends search query
-const query = document.getElementById('searchInput').value;
-
-// Backend receives & queries NewsAPI
-app.get('/api/news', async (req, res) => {
-  const q = req.query.q || 'technology';
-  const apiKey = process.env.NEWS_API_KEY;
-  
-  const response = await axios.get(
-    `https://newsapi.org/v2/everything?q=${q}&apiKey=${apiKey}`
-  );
-  
-  res.json(response.data.articles);
-});
-```
-
-### 2. Real-Time Data
+### 1. Real-Time Data
 Articles update automatically:
 - Latest news from 150,000+ sources
 - Coverage in 55 countries
 - 14 language support
 
-### 3. Responsive Design
+### 2. Responsive Design
 Works on:
 - 💻 Desktop browsers
 - 📱 Mobile phones
 - 📱 Tablets
 
-### 4. Secure API Key Handling
+### 3. Secure API Key Handling
 I never expose the API key:
 - Stored in environment variables
 - Never in source code
@@ -200,31 +181,19 @@ npm start
 # Visit: http://localhost:3000
 ```
 
-### With Docker
+### With Docker Hub Image
 
 ```bash
 # Build image locally
-docker build -t news-website:latest .
+docker pull vsanthoshraj/news_website_without_env:latest
 
 # Run container
 docker run -d \
   -e NEWS_API_KEY=your_key_here \
   -p 3000:3000 \
-  news-website:latest
+  vsanthoshraj/news_website_without_env:latest
 ```
 
-### With Docker Hub Image
-
-```bash
-# Pull pre-built image
-docker pull vsanthoshraj/news-website:latest
-
-# Run it
-docker run -d \
-  -e NEWS_API_KEY=your_key_here \
-  -p 3000:3000 \
-  vsanthoshraj/news-website:latest
-```
 
 ---
 
@@ -268,53 +237,6 @@ GET /api/news?q=noticias&language=es
 GET /api/news?q=bitcoin&sortBy=popularity
 ```
 
-**Response:**
-```json
-{
-  "articles": [
-    {
-      "source": { "id": null, "name": "Example.com" },
-      "author": "John Doe",
-      "title": "Breaking News...",
-      "description": "Article description...",
-      "url": "https://example.com/article",
-      "urlToImage": "https://example.com/image.jpg",
-      "publishedAt": "2025-11-10T12:00:00Z",
-      "content": "Full article content..."
-    }
-  ]
-}
-```
-
----
-
-## 🌐 Frontend (index.html)
-
-I built a clean, user-friendly interface:
-
-```html
-<div class="search-container">
-  <input 
-    type="text" 
-    id="searchInput" 
-    placeholder="Search news..."
-  />
-  <button onclick="searchNews()">Search</button>
-</div>
-
-<div id="newsList" class="news-container">
-  <!-- Articles displayed here -->
-</div>
-```
-
-**Features:**
-- Search bar at top
-- News cards displaying articles
-- Click to read full article
-- Responsive layout
-
----
-
 ## 🔒 Security
 
 ### How I Protect Your Data
@@ -331,10 +253,6 @@ I built a clean, user-friendly interface:
 - Environment variables for config
 - Docker images have no hardcoded keys
 
-✅ **HTTPS Ready:**
-- Can be deployed behind proxy
-- Works with SSL certificates
-- Production-ready configuration
 
 ---
 
@@ -417,24 +335,6 @@ kill -9 <PID>
 
 ---
 
-## 🛠️ Development
-
-### Adding New Features
-
-**Example: Add date filtering**
-
-```javascript
-// In server.js
-app.get('/api/news', async (req, res) => {
-  const fromDate = req.query.from || null;
-  
-  const response = await axios.get(
-    `https://newsapi.org/v2/everything?from=${fromDate}&...`
-  );
-  
-  res.json(response.data.articles);
-});
-```
 
 ### Testing Locally
 
@@ -475,7 +375,6 @@ curl "http://localhost:3000/api/news?q=bitcoin"
 - **GitHub Repo**: https://github.com/vsanthoshraj/g3sha-news-website-node-js
 - **NewsAPI**: https://newsapi.org
 - **Docker Hub**: https://hub.docker.com/r/vsanthoshraj/news-website
-- **Live Demo**: http://<server-ip>:3000
 
 ---
 
@@ -510,7 +409,7 @@ This app was built as part of a complete CI/CD project that includes:
 - **Container:** Docker deployment
 - **Monitoring:** Email alerts
 
-Learn more: [Main CI/CD Project README](https://github.com/vsanthoshraj/terraform-cicd-infrastructure)
+Learn more: [Main CI/CD Project README](https://github.com/vsanthoshraj/jenkins-CICD-News-Website-Deployment)
 
 ---
 
