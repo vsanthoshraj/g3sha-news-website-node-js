@@ -26,7 +26,7 @@ pipeline {
         stage('🔎 SonarQube Analysis') {
             steps {
                 echo '========== Running SonarQube Analysis =========='
-                withSonarQubeEnv('My SonarQube') {  // 'My SonarQube' name from global Jenkins config
+                withSonarQubeEnv('SonarQube') {  // 'My SonarQube' name from global Jenkins config
                     sh '''${SONARQUBE_SCANNER}/bin/sonar-scanner \
                          -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
                          -Dsonar.sources=. \
