@@ -11,24 +11,24 @@ pipeline {
         NEWS_API_KEY = credentials('NEWS_API_KEY')
         BUILD_TAG = "${BUILD_NUMBER}"
         SONARQUBE_PROJECT_KEY = "news-website"
-        SONARQUBE_SCANNER = tool('SonarQube Scanner') // name from Jenkins Global Tool Configuration
+        SONARQUBE_SCANNER = tool('SonarQube Scanner') // must match Jenkins Global Tool Configuration
     }
 
     stages {
         stage('🔄 Checkout') {
-            agent any // Any available node can run checkout
+            agent any // run on any available node
             steps {
                 echo '========== Checking out code =========='
                 checkout scm
                 sh 'git log --oneline -1'
             }
         }
-        
+
         stage('🔎 SonarQube Analysis') {
             agent any
             steps {
                 echo '========== Running SonarQube Analysis =========='
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('SonarQube') {  // must match SonarQube server name in Jenkins config
                     sh '''${SONARQUBE_SCANNER}/bin/sonar-scanner \
                          -Dsonar.projectKey=${SONARQUBE_PROJECT_KEY} \
                          -Dsonar.sources=. \
@@ -37,9 +37,9 @@ pipeline {
                 }
             }
         }
-        
+
         stage('🐳 Build Docker Image') {
-            agent { label 'docker' } // Run on Docker node
+            agent { label 'docker' } // run on docker node
             steps {
                 echo '========== Building Docker Image =========='
                 sh '''
@@ -52,7 +52,7 @@ pipeline {
         }
 
         stage('🚀 Deploy') {
-            agent { label 'docker' } // Run on Docker node
+            agent { label 'docker' } // run on docker node
             steps {
                 echo '========== Deploying Application =========='
                 sh '''
@@ -75,14 +75,14 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // Cleans workspace safely
+            node {
+                cleanWs()  // clean workspace inside node context
+            }
         }
-
         success {
             echo "✅ BUILD SUCCESS!"
             echo "App running at: http://52.71.5.19:${PORT}/api/news"
         }
-
         failure {
             echo "❌ BUILD FAILED!"
         }
